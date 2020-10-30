@@ -10,6 +10,7 @@ import io.reactivex.schedulers.Schedulers
 import mamdevsolutions.com.au.animals.model.Animal
 import mamdevsolutions.com.au.animals.model.AnimalApiService
 import mamdevsolutions.com.au.animals.model.ApiKey
+import mamdevsolutions.com.au.animals.util.SharedPreferencesHelper
 
 class ListViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -20,9 +21,20 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
 
     private val disposable = CompositeDisposable()
     private val apiService = AnimalApiService()
+
+    private val prefs = SharedPreferencesHelper(getApplication())
+
+    private var invalidApiKey = false
+
     fun refresh() {
         loading.value = true
-        getKey()
+        invalidApiKey = false
+        val key :String? = prefs.getApiKey()
+        if (key.isNullOrEmpty()) {
+            getKey()
+        } else {
+            getAnimals(key)
+        }
     }
 
     private fun getKey() {
@@ -37,6 +49,7 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
                                 loadError.value = true
                                 loading.value = false
                             } else {
+                                prefs.saveApiKey(apikey.key)
                                 getAnimals(apikey.key)
                             }
                         }
@@ -63,6 +76,10 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
                             }
 
                             override fun onError(e: Throwable) {
+                                if (!invalidApiKey) {
+                                    invalidApiKey = true
+                                    getKey()
+                                }
                                 loadError.value = true
                                 loading.value = false
                             }
