@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:padding="4dp"
-            android:text="Animal name"
+            android:text="@{animal.name}"
             app:layout_constraintBottom_toBottomOf="@+id/animalImage"
             app:layout_constraintEnd_toEndOf="@+id/animalImage"
             app:layout_constraintStart_toStartOf="@+id/animalImage" />

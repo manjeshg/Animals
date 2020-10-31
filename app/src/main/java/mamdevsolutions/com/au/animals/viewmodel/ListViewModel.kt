@@ -7,10 +7,16 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
+import mamdevsolutions.com.au.animals.di.AppModule
+import mamdevsolutions.com.au.animals.di.CONTEXT_APP
+import mamdevsolutions.com.au.animals.di.DaggerViewModelComponent
+import mamdevsolutions.com.au.animals.di.TypeOfContext
 import mamdevsolutions.com.au.animals.model.Animal
 import mamdevsolutions.com.au.animals.model.AnimalApiService
 import mamdevsolutions.com.au.animals.model.ApiKey
 import mamdevsolutions.com.au.animals.util.SharedPreferencesHelper
+import javax.inject.Inject
+import javax.inject.Qualifier
 
 class ListViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -20,9 +26,24 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
     val loading by lazy { MutableLiveData<Boolean>()}
 
     private val disposable = CompositeDisposable()
-    private val apiService = AnimalApiService()
 
-    private val prefs = SharedPreferencesHelper(getApplication())
+    @Inject
+    lateinit var apiService: AnimalApiService
+
+    init {
+        DaggerViewModelComponent.builder()
+                .appModule(AppModule(getApplication()))
+                .build()
+                .inject(this)
+    }
+
+    @Inject
+    @field:TypeOfContext(CONTEXT_APP)
+    lateinit var prefs: SharedPreferencesHelper
+
+    // prevents from testing ( ideally we would like to inject this )
+    //private val apiService = AnimalApiService() // we need to mock this
+    //private val prefs = SharedPreferencesHelper(getApplication()) // we need to mock this
 
     private var invalidApiKey = false
 
